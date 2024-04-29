@@ -21,7 +21,7 @@ defaults:
 
 jobs:
   ### Makes a call to the workflow template defined to execute terraform, in this case the variables define the develop environment
-  infra-deploy:
+  Docker-build:
     uses: danielrive/devoteam-load-generator/.github/workflows/service-build-push-template.yaml@develop
     with: 
       ENVIRONMENT: 'develop'
