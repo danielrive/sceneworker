@@ -17,6 +17,10 @@ jobs:
       - name: checkout-repo
         id: checkout
         uses: actions/checkout@v4
+      - name: Testing
+        run: |
+          go test load_generator_test.go
+        working-directory: './cmd'
       - name: Set up QEMU
         id: set-up-qemu
         uses: docker/setup-qemu-action@v2
