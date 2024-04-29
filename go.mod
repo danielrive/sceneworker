@@ -1,4 +1,4 @@
-module devoteam_load_generator
+module devoteam-load-generator
 
 go 1.22.1
 

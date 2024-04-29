@@ -1,7 +1,7 @@
 package main
 
 import (
-	"devoteam_load_generator/internal/worker"
+	"devoteam-load-generator/internal/worker"
 	"net/http"
 	"strconv"
 	"time"

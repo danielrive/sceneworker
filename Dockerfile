@@ -12,13 +12,13 @@ COPY go.sum .
 
 # Copy the application source code to the container
 
-COPY  devoteam-load-generator/internal/worker/* ./devoteam-load-generator/internal/worker/
-COPY  devoteam-load-generator/cmd/load_generator.go ./devoteam-load-generator/cmd/
+COPY  /internal/worker/* ./internal/worker/
+COPY  /cmd/load_generator.go ./load_generator.go
 
 
 # Build the Go application statically
 
-WORKDIR /app/load_generator
+WORKDIR /app
 # Build the Go application statically
 RUN CGO_ENABLED=0 GOOS=linux go build -a -o /bin/load_generator load_generator.go
 
