@@ -24,7 +24,7 @@ func index() {
 	outputHttpWorker, err := index_worker.Run()
 
 	if err != nil {
-		globalBoomer.RecordFailure(index_worker.Url, strconv.Itoa(outputHttpWorker.StatusCode), outputHttpWorker.ElapsedTime, err.Error())
+		globalBoomer.RecordFailure(index_worker.Url, err.Error(), outputHttpWorker.ElapsedTime, err.Error())
 	} else {
 		globalBoomer.RecordSuccess(index_worker.Url, strconv.Itoa(outputHttpWorker.StatusCode), outputHttpWorker.ElapsedTime, outputHttpWorker.LenghtBody)
 	}

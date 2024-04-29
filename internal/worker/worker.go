@@ -1,11 +1,19 @@
 package worker
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
+)
+
+// Common errors
+var (
+	errorTimeout = errors.New("Timeout")
+	errorRefused = errors.New("Refused")
 )
 
 // defining a interface for worker
@@ -46,27 +54,32 @@ func (hw *HttpWorker) Run() (OutputHttpWorker, error) {
 	// Validate data type and procces de body based on the data type
 
 	request, err := http.NewRequest(hw.HttpMethod, urlParsed.String(), nil)
+
+	// Validate if error is Timeout or the site is not up
 	if err != nil {
-		// panic by log
-		log.Println("Error creating request", err)
-		return output, err
+		log.Fatal("Worker ERROR, creating request:", err)
 	}
 	start := time.Now()
 	response, err := hw.HttpClient.Do(request)
 	elapsed := time.Since(start)
-	// convert to miliseconds
 
+	// Validate if error is Timeout or the site is not up
 	if err != nil {
-		log.Println("Error sending request", err)
-		return output, err
+		if strings.Contains(err.Error(), "timeout") {
+			//log.Println("Error creating request", err)
+			return output, errorTimeout
+		} else {
+			//log.Println("Error creating request", err)
+			return output, errorRefused
+		}
 	}
-
+	// convert to miliseconds
 	contentLengthStr := response.Header.Get("Content-Length")
+	// validate content length
 	if contentLengthStr != "" {
 		contentLength, err := strconv.Atoi(contentLengthStr)
 		if err != nil {
-			log.Fatal("Error parsing Content-Length:", err)
-			return output, err
+			log.Fatal("Worker ERROR, Error parsing Content-Length:", err)
 		}
 		output.LenghtBody = int64(contentLength)
 	} else {
