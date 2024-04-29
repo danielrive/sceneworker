@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"devoteam-load-generator/internal/worker"
 	"net/http"
 	"strconv"
 	"time"
@@ -13,27 +13,26 @@ var client *http.Client
 var timeout int = 1
 
 func index() {
-	request, err := http.NewRequest("GET", "http://192.168.0.100:8080", nil)
-	if err != nil {
-		log.Fatalf("%v\n", err)
-	}
-	startTime := time.Now()
-	response, err := client.Do(request)
-	elapsed := time.Since(startTime)
-	if err != nil {
-		globalBoomer.RecordFailure("Get /", "error", elapsed.Nanoseconds()/int64(time.Millisecond), err.Error())
-	} else {
-		globalBoomer.RecordSuccess("Get /", strconv.Itoa(response.StatusCode),
-			elapsed.Nanoseconds()/int64(time.Millisecond), response.ContentLength)
 
-		response.Body.Close()
+	// create http worker
+	index_worker := worker.HttpWorker{
+		Url:        "http://192.168.0.100:8080/",
+		HttpMethod: "GET",
+		HttpClient: client,
+	}
+
+	outputHttpWorker, err := index_worker.Run()
+
+	if err != nil {
+		globalBoomer.RecordFailure(index_worker.Url, strconv.Itoa(outputHttpWorker.StatusCode), outputHttpWorker.ElapsedTime, err.Error())
+	} else {
+		globalBoomer.RecordSuccess(index_worker.Url, strconv.Itoa(outputHttpWorker.StatusCode), outputHttpWorker.ElapsedTime, outputHttpWorker.LenghtBody)
 	}
 }
 
 var globalBoomer *boomer.Boomer
 
 func main() {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	client = &http.Client{
 		Timeout: time.Duration(timeout) * time.Second,
 	}
