@@ -79,11 +79,11 @@ func (hw *HttpWorker) Run() (OutputHttpWorker, error) {
 
 	// Validate if error is Timeout or the site is not up
 	if err != nil {
-		if strings.Contains(err.Error(), "timeout") {
+		if strings.Contains(err.Error(), "Client.Timeout") {
 			//log.Println("Error creating request", err)
 			return output, common.ErrorTimeout
 		} else {
-			//log.Println("Error creating request", err)
+			log.Fatal("Worker ERROR, bad request ", err)
 			return output, err
 		}
 	}

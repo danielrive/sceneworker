@@ -12,6 +12,8 @@ COPY go.sum .
 
 # Copy the application source code to the container
 
+COPY  /common/* ./common/
+COPY  /utils/* ./utils/
 COPY  /internal/worker/* ./internal/worker/
 COPY  /cmd/load_generator.go ./load_generator.go
 
