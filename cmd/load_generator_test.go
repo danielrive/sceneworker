@@ -54,7 +54,7 @@ func TestWorkerGet(t *testing.T) {
 	response, err := testGetWorker.Run()
 
 	// Assertions
-	if response.ElapsedTime == 0 {
+	if response.ElapsedTime >= 0 {
 		t.Errorf("Expected time grather than 0, got %d", response.ElapsedTime)
 	}
 

@@ -102,7 +102,6 @@ func (hw *HttpWorker) Run() (OutputHttpWorker, error) {
 	}
 
 	output.ElapsedTime = elapsed.Nanoseconds() / int64(time.Millisecond)
-
 	output.StatusCode = response.StatusCode
 
 	return output, nil

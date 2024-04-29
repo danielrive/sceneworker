@@ -54,6 +54,45 @@ func setCurrency() {
 	}
 }
 
+func browseProduct() {
+
+	// create http worker
+	setCurrencyWorker := worker.HttpWorker{
+		Url:         "http://192.168.0.100:8080/product/" + utils.PickupRandom(common.Products),
+		HttpMethod:  "GET",
+		HttpClient:  client,
+		ContentType: "application/x-www-form-urlencoded",
+	}
+
+	outputHttpWorker, err := setCurrencyWorker.Run()
+
+	if err != nil {
+		globalBoomer.RecordFailure(setCurrencyWorker.Url, err.Error(), outputHttpWorker.ElapsedTime, err.Error())
+	} else {
+		globalBoomer.RecordSuccess(setCurrencyWorker.Url, strconv.Itoa(outputHttpWorker.StatusCode), outputHttpWorker.ElapsedTime, outputHttpWorker.LenghtBody)
+	}
+}
+
+func checkout() {
+
+	// create http worker
+	checkoutWorker := worker.HttpWorker{
+		Url:         "http://192.168.0.100:8080/cart/checkout",
+		HttpMethod:  "POST",
+		HttpClient:  client,
+		ContentType: "application/x-www-form-urlencoded",
+		Body:        utils.FakeCheckout(),
+	}
+
+	outputHttpWorker, err := checkoutWorker.Run()
+
+	if err != nil {
+		globalBoomer.RecordFailure(checkoutWorker.Url, err.Error(), outputHttpWorker.ElapsedTime, err.Error())
+	} else {
+		globalBoomer.RecordSuccess(checkoutWorker.Url, strconv.Itoa(outputHttpWorker.StatusCode), outputHttpWorker.ElapsedTime, outputHttpWorker.LenghtBody)
+	}
+}
+
 var globalBoomer *boomer.Boomer
 
 func main() {
@@ -75,12 +114,25 @@ func main() {
 		Fn:     setCurrency,
 	}
 
+	task3 := &boomer.Task{
+		Name:   "browseProducts",
+		Weight: 10,
+		Fn:     browseProduct,
+	}
+	task4 := &boomer.Task{
+		Name:   "checkout",
+		Weight: 10,
+		Fn:     checkout,
+	}
+
 	ts.AddTask(task1)
 	ts.AddTask(task2)
+	ts.AddTask(task3)
+	ts.AddTask(task4)
 
 	numClients := 2
 	spawnRate := float64(10)
 	globalBoomer = boomer.NewStandaloneBoomer(numClients, spawnRate)
 	globalBoomer.AddOutput(boomer.NewConsoleOutput())
-	globalBoomer.Run(task1, task2)
+	globalBoomer.Run(task1, task2, task3, task4)
 }
