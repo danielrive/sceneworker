@@ -34,5 +34,5 @@ jobs:
             
             echo "${{ github.ref }}"
 
-            docker buildx build -t ${{ inputs.PROJECT_NAME }}:${{ inputs.ENVIRONMENT }} --file ./Dockerfile  --platform linux/amd64 .
+            docker buildx build -t ${{ inputs.PROJECT_NAME }}:${{ inputs.ENVIRONMENT }} --file Dockerfile  --platform linux/amd64 .
 
