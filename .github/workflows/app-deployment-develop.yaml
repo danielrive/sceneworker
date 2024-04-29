@@ -17,7 +17,6 @@ permissions:
 defaults:
   run:
     shell: bash
-    working-directory: ./
 
 jobs:
   ### Makes a call to the workflow template defined to execute terraform, in this case the variables define the develop environment

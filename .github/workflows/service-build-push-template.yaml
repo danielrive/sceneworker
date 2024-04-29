@@ -25,7 +25,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
       - name: Build containter
         id: build
-        working-directory: '/'
+        working-directory: './'
         run: |
 
             COMMIT_ID=${{ github.sha}}
