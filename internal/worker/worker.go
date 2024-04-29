@@ -1,19 +1,15 @@
 package worker
 
 import (
-	"errors"
+	"bytes"
+	"devoteam-load-generator/common"
+	"encoding/json"
 	"log"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
-)
-
-// Common errors
-var (
-	errorTimeout = errors.New("Timeout")
-	errorRefused = errors.New("Refused")
 )
 
 // defining a interface for worker
@@ -26,18 +22,23 @@ type Worker interface {
 // Define http worker
 
 type HttpWorker struct {
-	HttpClient *http.Client
-	Url        string
-	HttpMethod string
+	HttpClient  *http.Client
+	Url         string
+	HttpMethod  string
+	ContentType string
+	Body        map[string]string
 }
 
 type OutputHttpWorker struct {
-	StatusCode  int
-	LenghtBody  int64
-	ElapsedTime int64
+	StatusCode  int   `json:"StatusCode"`
+	LenghtBody  int64 `json:"LenghtBody"`
+	ElapsedTime int64 `json:"ElapsedTime"`
 }
 
 func (hw *HttpWorker) Run() (OutputHttpWorker, error) {
+	// empty data by default
+	data := []byte{}
+
 	output := OutputHttpWorker{
 		StatusCode:  -100,
 		LenghtBody:  -100,
@@ -51,9 +52,22 @@ func (hw *HttpWorker) Run() (OutputHttpWorker, error) {
 
 	}
 
-	// Validate data type and procces de body based on the data type
+	// Validate if Method is POST to setup the datatype of the answer
+	if hw.HttpMethod == "POST" {
+		if hw.ContentType == "application/json" {
+			data, _ = json.Marshal(hw.Body)
+		}
+		if hw.ContentType == "application/x-www-form-urlencoded" {
+			htmlForm := url.Values{}
+			for key, value := range hw.Body {
+				htmlForm.Set(key, value)
+			}
+			data = []byte(htmlForm.Encode())
+		}
 
-	request, err := http.NewRequest(hw.HttpMethod, urlParsed.String(), nil)
+	}
+
+	request, err := http.NewRequest(hw.HttpMethod, urlParsed.String(), bytes.NewBuffer(data))
 
 	// Validate if error is Timeout or the site is not up
 	if err != nil {
@@ -67,10 +81,10 @@ func (hw *HttpWorker) Run() (OutputHttpWorker, error) {
 	if err != nil {
 		if strings.Contains(err.Error(), "timeout") {
 			//log.Println("Error creating request", err)
-			return output, errorTimeout
+			return output, common.ErrorTimeout
 		} else {
 			//log.Println("Error creating request", err)
-			return output, errorRefused
+			return output, err
 		}
 	}
 	// convert to miliseconds
