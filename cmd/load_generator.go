@@ -1,7 +1,7 @@
 package main
 
 import (
-	"devoteam-load-generator/internal/worker"
+	"devoteam_load_generator/internal/worker"
 	"net/http"
 	"strconv"
 	"time"
@@ -15,18 +15,18 @@ var timeout int = 1
 func index() {
 
 	// create http worker
-	index_worker := worker.HttpWorker{
+	indexWorker := worker.HttpWorker{
 		Url:        "http://192.168.0.100:8080/",
 		HttpMethod: "GET",
 		HttpClient: client,
 	}
 
-	outputHttpWorker, err := index_worker.Run()
+	outputHttpWorker, err := indexWorker.Run()
 
 	if err != nil {
-		globalBoomer.RecordFailure(index_worker.Url, err.Error(), outputHttpWorker.ElapsedTime, err.Error())
+		globalBoomer.RecordFailure(indexWorker.Url, err.Error(), outputHttpWorker.ElapsedTime, err.Error())
 	} else {
-		globalBoomer.RecordSuccess(index_worker.Url, strconv.Itoa(outputHttpWorker.StatusCode), outputHttpWorker.ElapsedTime, outputHttpWorker.LenghtBody)
+		globalBoomer.RecordSuccess(indexWorker.Url, strconv.Itoa(outputHttpWorker.StatusCode), outputHttpWorker.ElapsedTime, outputHttpWorker.LenghtBody)
 	}
 }
 
