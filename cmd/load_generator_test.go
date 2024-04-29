@@ -38,14 +38,6 @@ func TestWorkerGet(t *testing.T) {
 
 	})
 
-	ginRouter.POST("/cart", func(c *gin.Context) {
-
-		c.Writer.Header().Set("Content-Type", "application/json")
-		c.Writer.Write(jsonData)
-		c.Writer.WriteHeader(http.StatusOK)
-
-	})
-
 	// Create a server using the Gin router
 	ts := httptest.NewServer(ginRouter)
 	defer ts.Close()
@@ -59,9 +51,13 @@ func TestWorkerGet(t *testing.T) {
 	}
 
 	// Update Worker function to use the test server URL
-	_, err = testGetWorker.Run()
+	response, err := testGetWorker.Run()
 
 	// Assertions
+	if response.ElapsedTime == 0 {
+		t.Errorf("Expected time grather than 0, got %d", response.ElapsedTime)
+	}
+
 	// compare if error is different to nil or ERROR
 
 	if err != nil && err != common.ErrorTimeout {
@@ -87,9 +83,8 @@ func TestWorkerPost(t *testing.T) {
 	// Create a Gin router for mocking
 	ginRouter := gin.Default()
 
-	ginRouter.POST("/cart", func(c *gin.Context) {
+	ginRouter.POST("/setCurrency", func(c *gin.Context) {
 
-		c.Writer.Header().Set("Content-Type", "application/json")
 		c.Writer.Write(jsonData)
 		c.Writer.WriteHeader(http.StatusOK)
 

@@ -58,6 +58,7 @@ func (hw *HttpWorker) Run() (OutputHttpWorker, error) {
 			data, _ = json.Marshal(hw.Body)
 		}
 		if hw.ContentType == "application/x-www-form-urlencoded" {
+
 			htmlForm := url.Values{}
 			for key, value := range hw.Body {
 				htmlForm.Set(key, value)
@@ -68,7 +69,7 @@ func (hw *HttpWorker) Run() (OutputHttpWorker, error) {
 	}
 
 	request, err := http.NewRequest(hw.HttpMethod, urlParsed.String(), bytes.NewBuffer(data))
-
+	request.Header.Set("Content-Type", hw.ContentType)
 	// Validate if error is Timeout or the site is not up
 	if err != nil {
 		log.Fatal("Worker ERROR, creating request:", err)
