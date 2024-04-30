@@ -20,8 +20,6 @@ func TestWorkerGet(t *testing.T) {
 	//expectedData := []byte(`{"message": "success"}`)
 	jsonData, err := json.Marshal(expectedData)
 
-	fmt.Println(jsonData)
-
 	if err != nil {
 		t.Errorf("Error marshalling mock response: %v", err)
 		return
@@ -54,7 +52,7 @@ func TestWorkerGet(t *testing.T) {
 	response, err := testGetWorker.Run()
 
 	// Assertions
-	if response.ElapsedTime >= 0 {
+	if response.ElapsedTime <= 0 {
 		t.Errorf("Expected time grather than 0, got %d", response.ElapsedTime)
 	}
 
