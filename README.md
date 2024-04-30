@@ -48,19 +48,19 @@ Boomer task represents a specific operation or action that you want to perform r
 Bommer defines the task as this
 ```Go
 type Task struct {
-	// The weight of a task determines the relative proportion of goroutines that should be assigned to execute that task
-  // compared to other tasks. Higher-weight tasks receive more goroutines, while lower-weight tasks receive fewer goroutines
-	Weight int
-	// Fn is called by the goroutines allocated to this task, in a loop.
-	Fn   func()
-	Name string
+   // The weight of a task determines the relative proportion of goroutines that should be assigned to execute that task
+   // compared to other tasks. Higher-weight tasks receive more goroutines, while lower-weight tasks receive fewer goroutines
+   Weight int
+   // Fn is called by the goroutines allocated to this task, in a loop.
+   Fn   func()
+   Name string
 }
 ```
-### Creating Task
+### Creating and running Tasks
 
 Before creating a Boomer task you must define the function that the task will execute. An HttpWorker can be implemented, this abstracts the job of sending HTTP request and generating an output that Boomer will use to show results.
 
-#### Creating a function that implements a HttpWorker.
+**1. Creating a function that implements a HttpWorker.**
 
 setCurrency function creates an HttpWorker with specific attributes like, Http method and body to send in the Post Request. 
 Run() function will return information like Http code in the response, the time elapsed in the request, and content-lengt.This information is passed to Boomer to record a successful/failed test.
@@ -87,9 +87,26 @@ func setCurrency() {
 	}
 }
 ```
+**2. Creating the task.**
 
+Creating a task is an easy process, you set a name, the weight, and finally, you pass the function's name created previously.
+``` Go
+  task := &boomer.Task{
+	Name:   "checkout",
+	Weight: 10,
+	Fn:     checkout,
+	}
+```
+**3. Running the task.**
+
+Once the tasks have been defined, you can call Boomer to execute them, you specify the number of concurrent clients and the spawnRate that is numberRequest/Second.
+``` Go
+     numClients := 100
+     spawnRate := float64(200)
+     globalBoomer = boomer.NewStandaloneBoomer(numClients, spawnRate)
+     globalBoomer.Run(task1, task2, task3, task4)
+```
 # Usage
-
 
 ## Run via Docker
 
@@ -98,6 +115,31 @@ func setCurrency() {
    ```bash
    git clone https://github.com/yourusername/load-generator.git
    cd load-generator
+   ```
+2. **Build The Docker Image**
+ ```bash
+   docker build -t load-generator .
+```
+3. **Run the image**
+   ```bash
+   docker run -it -e URL="URL_WHERE_FRONT_END"  load-generator 
+   ```
 
-## Binary
-To use this load generator, make sure you have Go installed on your system. You can download and install it from the official Go website.
+## Binary generation
+
+To use this load generator, make sure you have Go (>=1.22) installed on your system. You can download and install it from the official Go website.
+
+1. **Clone the Repository**:
+
+   ```bash
+   git clone https://github.com/yourusername/load-generator.git
+   cd load-generator
+   ```
+2. **Build the Binary**
+ ```bash
+   go build -o ./load_generator ./cmd/load_generator.go
+```
+3. **Execute the Binary **
+ ```bash
+  export URL="URL_WHERE_FRONT_END" ./load_generator
+```
