@@ -5,6 +5,7 @@ import (
 	"devoteam-load-generator/internal/worker"
 	"devoteam-load-generator/utils"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -12,13 +13,14 @@ import (
 )
 
 var client *http.Client
-var timeout int = 1
+var timeout int = 3
+var url string
 
 func index() {
 
 	// create http worker
 	indexWorker := worker.HttpWorker{
-		Url:        "http://192.168.0.100:8080/",
+		Url:        url + "/",
 		HttpMethod: "GET",
 		HttpClient: client,
 	}
@@ -36,7 +38,7 @@ func setCurrency() {
 
 	// create http worker
 	serCurrencyWorker := worker.HttpWorker{
-		Url:         "http://192.168.0.100:8080/setCurrency",
+		Url:         url + "/setCurrency",
 		HttpMethod:  "POST",
 		HttpClient:  client,
 		ContentType: "application/x-www-form-urlencoded",
@@ -58,7 +60,7 @@ func browseProduct() {
 
 	// create http worker
 	setCurrencyWorker := worker.HttpWorker{
-		Url:         "http://192.168.0.100:8080/product/" + utils.PickupRandom(common.Products),
+		Url:         url + "/product/" + utils.PickupRandom(common.Products),
 		HttpMethod:  "GET",
 		HttpClient:  client,
 		ContentType: "application/x-www-form-urlencoded",
@@ -77,7 +79,7 @@ func checkout() {
 
 	// create http worker
 	checkoutWorker := worker.HttpWorker{
-		Url:         "http://192.168.0.100:8080/cart/checkout",
+		Url:         url + "/cart/checkout",
 		HttpMethod:  "POST",
 		HttpClient:  client,
 		ContentType: "application/x-www-form-urlencoded",
@@ -96,11 +98,18 @@ func checkout() {
 var globalBoomer *boomer.Boomer
 
 func main() {
+	url = os.Getenv("URL")
+	if url == "" {
+		panic("URL cannot be empty")
+	}
 	client = &http.Client{
 		Timeout: time.Duration(timeout) * time.Second,
 	}
-
-	ts := boomer.NewWeighingTaskSet()
+	// Scenario
+	// 1. index
+	// 2. setCurrency
+	// 3. browseProducts
+	// 4. checkout
 
 	task1 := &boomer.Task{
 		Name:   "index",
@@ -125,14 +134,11 @@ func main() {
 		Fn:     checkout,
 	}
 
-	ts.AddTask(task1)
-	ts.AddTask(task2)
-	ts.AddTask(task3)
-	ts.AddTask(task4)
-
-	numClients := 2
-	spawnRate := float64(10)
+	numClients := 100
+	spawnRate := float64(200)
 	globalBoomer = boomer.NewStandaloneBoomer(numClients, spawnRate)
-	globalBoomer.AddOutput(boomer.NewConsoleOutput())
+	//globalBoomer.AddOutput(boomer.NewConsoleOutput())
+
 	globalBoomer.Run(task1, task2, task3, task4)
+
 }
