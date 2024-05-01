@@ -1,13 +1,9 @@
-package scenario
-
-import (
-	"devoteam-load-generator/internal/worker"
-)
+package sceneworker
 
 type HttpScenario struct {
 	Name string
 	// array of functions
-	HttpWorkers []worker.HttpWorker
+	HttpWorkers []HttpWorker
 }
 
 type OutputHttpWorkerScenario struct {
@@ -17,7 +13,7 @@ type OutputHttpWorkerScenario struct {
 	Err         error `json:"Err"`
 }
 
-type Scenario2 interface {
+type Scenario interface {
 	Run(req interface{}) (interface{}, error)
 }
 

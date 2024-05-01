@@ -1,8 +1,6 @@
-package main
+package sceneworker
 
 import (
-	"devoteam-load-generator/common"
-	"devoteam-load-generator/internal/worker"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -14,7 +12,7 @@ import (
 
 func TestWorkerGet(t *testing.T) {
 	// Define expected response data
-	expectedData := worker.OutputHttpWorker{
+	expectedData := OutputHttpWorker{
 		StatusCode: 200,
 	}
 	//expectedData := []byte(`{"message": "success"}`)
@@ -42,7 +40,7 @@ func TestWorkerGet(t *testing.T) {
 
 	// define HttpWorker
 	client := &http.Client{}
-	testGetWorker := worker.HttpWorker{
+	testGetWorker := HttpWorker{
 		Url:        ts.URL,
 		HttpMethod: "GET",
 		HttpClient: client,
@@ -58,7 +56,7 @@ func TestWorkerGet(t *testing.T) {
 
 	// compare if error is different to nil or ERROR
 
-	if err != nil && err != common.ErrorTimeout {
+	if err != nil && err != ErrorTimeout {
 		t.Errorf("Unexpected error: %v", err)
 	}
 
@@ -66,7 +64,7 @@ func TestWorkerGet(t *testing.T) {
 
 func TestWorkerPost(t *testing.T) {
 	// Define expected response data
-	expectedData := worker.OutputHttpWorker{
+	expectedData := OutputHttpWorker{
 		StatusCode: 200,
 	}
 	//expectedData := []byte(`{"message": "success"}`)
@@ -95,7 +93,7 @@ func TestWorkerPost(t *testing.T) {
 	// define HttpWorker
 	client := &http.Client{}
 
-	testPostWorker := worker.HttpWorker{
+	testPostWorker := HttpWorker{
 		Url:        ts2.URL,
 		HttpMethod: "POST",
 		HttpClient: client,
@@ -106,7 +104,7 @@ func TestWorkerPost(t *testing.T) {
 	// Assertions
 	// compare if error is different to nil or ERROR
 
-	if err != nil && err != common.ErrorTimeout {
+	if err != nil && err != ErrorTimeout {
 		t.Errorf("Unexpected error: %v", err)
 	}
 

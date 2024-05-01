@@ -1,15 +1,20 @@
-package worker
+package sceneworker
 
 import (
 	"bytes"
-	"devoteam-load-generator/common"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
+)
+
+var (
+	ErrorTimeout = errors.New("Timeout")
+	ErrorRefused = errors.New("Refused")
 )
 
 // defining a interface for worker
@@ -91,7 +96,7 @@ func (hw *HttpWorker) Run() (OutputHttpWorker, error) {
 	if err != nil {
 		if strings.Contains(err.Error(), "Client.Timeout") {
 			//log.Println("Error creating request", err)
-			return output, common.ErrorTimeout
+			return output, ErrorTimeout
 		} else {
 			log.Fatal("Worker ERROR, bad request ", err)
 			return output, err
