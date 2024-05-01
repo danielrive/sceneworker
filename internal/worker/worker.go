@@ -27,12 +27,14 @@ type HttpWorker struct {
 	HttpMethod  string
 	ContentType string
 	Body        map[string]string
+	Cookies     []*http.Cookie
 }
 
 type OutputHttpWorker struct {
 	StatusCode  int   `json:"StatusCode"`
 	LenghtBody  int64 `json:"LenghtBody"`
 	ElapsedTime int64 `json:"ElapsedTime"`
+	Cookies     []*http.Cookie
 }
 
 func (hw *HttpWorker) Run() (OutputHttpWorker, error) {
@@ -74,6 +76,13 @@ func (hw *HttpWorker) Run() (OutputHttpWorker, error) {
 	if err != nil {
 		log.Fatal("Worker ERROR, creating request:", err)
 	}
+	// add cookies if exists
+	// validate if the Cookies atribute is empty
+	if len(hw.Cookies) != 0 {
+		for _, cookie := range hw.Cookies {
+			request.AddCookie(cookie)
+		}
+	}
 	start := time.Now()
 	response, err := hw.HttpClient.Do(request)
 	elapsed := time.Since(start)
@@ -88,6 +97,8 @@ func (hw *HttpWorker) Run() (OutputHttpWorker, error) {
 			return output, err
 		}
 	}
+	// store cookies
+	output.Cookies = response.Cookies()
 	// convert to miliseconds
 	contentLengthStr := response.Header.Get("Content-Length")
 	// validate content length

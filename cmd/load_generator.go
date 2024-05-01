@@ -2,6 +2,7 @@ package main
 
 import (
 	"devoteam-load-generator/common"
+	"devoteam-load-generator/internal/scenario"
 	"devoteam-load-generator/internal/worker"
 	"devoteam-load-generator/utils"
 	"net/http"
@@ -34,9 +35,14 @@ func index() {
 	}
 }
 
-func setCurrency() {
+func scenario1() {
 
-	// create http worker
+	indexWorker := worker.HttpWorker{
+		Url:        url + "/",
+		HttpMethod: "GET",
+		HttpClient: client,
+	}
+
 	serCurrencyWorker := worker.HttpWorker{
 		Url:         url + "/setCurrency",
 		HttpMethod:  "POST",
@@ -47,37 +53,30 @@ func setCurrency() {
 		},
 	}
 
-	outputHttpWorker, err := serCurrencyWorker.Run()
-
-	if err != nil {
-		globalBoomer.RecordFailure(serCurrencyWorker.Url, err.Error(), outputHttpWorker.ElapsedTime, err.Error())
-	} else {
-		globalBoomer.RecordSuccess(serCurrencyWorker.Url, strconv.Itoa(outputHttpWorker.StatusCode), outputHttpWorker.ElapsedTime, outputHttpWorker.LenghtBody)
-	}
-}
-
-func browseProduct() {
-
-	// create http worker
-	setCurrencyWorker := worker.HttpWorker{
+	browseProductWorker := worker.HttpWorker{
 		Url:         url + "/product/" + utils.PickupRandom(common.Products),
 		HttpMethod:  "GET",
 		HttpClient:  client,
 		ContentType: "application/x-www-form-urlencoded",
 	}
 
-	outputHttpWorker, err := setCurrencyWorker.Run()
-
-	if err != nil {
-		globalBoomer.RecordFailure(setCurrencyWorker.Url, err.Error(), outputHttpWorker.ElapsedTime, err.Error())
-	} else {
-		globalBoomer.RecordSuccess(setCurrencyWorker.Url, strconv.Itoa(outputHttpWorker.StatusCode), outputHttpWorker.ElapsedTime, outputHttpWorker.LenghtBody)
+	viewCartWorker := worker.HttpWorker{
+		Url:         url + "/cart",
+		HttpMethod:  "GET",
+		HttpClient:  client,
+		ContentType: "application/x-www-form-urlencoded",
 	}
-}
 
-func checkout() {
-
-	// create http worker
+	addToCartWorker := worker.HttpWorker{
+		Url:         url + "/cart",
+		HttpMethod:  "POST",
+		HttpClient:  client,
+		ContentType: "application/x-www-form-urlencoded",
+		Body: map[string]string{
+			"product_id": utils.PickupRandom(common.Products),
+			"quantity":   "1",
+		},
+	}
 	checkoutWorker := worker.HttpWorker{
 		Url:         url + "/cart/checkout",
 		HttpMethod:  "POST",
@@ -86,12 +85,24 @@ func checkout() {
 		Body:        utils.FakeCheckout(),
 	}
 
-	outputHttpWorker, err := checkoutWorker.Run()
+	scenario1 := scenario.HttpScenario{
+		Name: "scenario1",
+		HttpWorkers: []worker.HttpWorker{
+			indexWorker,
+			serCurrencyWorker,
+			browseProductWorker,
+			viewCartWorker,
+			addToCartWorker,
+			checkoutWorker,
+		},
+	}
 
-	if err != nil {
-		globalBoomer.RecordFailure(checkoutWorker.Url, err.Error(), outputHttpWorker.ElapsedTime, err.Error())
+	outputScearnio := scenario1.Run()
+
+	if outputScearnio.Err != nil {
+		globalBoomer.RecordFailure(scenario1.Name, outputScearnio.Err.Error(), outputScearnio.ElapsedTime, outputScearnio.Err.Error())
 	} else {
-		globalBoomer.RecordSuccess(checkoutWorker.Url, strconv.Itoa(outputHttpWorker.StatusCode), outputHttpWorker.ElapsedTime, outputHttpWorker.LenghtBody)
+		globalBoomer.RecordSuccess(scenario1.Name, strconv.Itoa(outputScearnio.StatusCode), outputScearnio.ElapsedTime, outputScearnio.LenghtBody)
 	}
 }
 
@@ -105,40 +116,17 @@ func main() {
 	client = &http.Client{
 		Timeout: time.Duration(timeout) * time.Second,
 	}
-	// Scenario
-	// 1. index
-	// 2. setCurrency
-	// 3. browseProducts
-	// 4. checkout
 
 	task1 := &boomer.Task{
 		Name:   "index",
-		Weight: 20,
-		Fn:     index,
+		Weight: 15,
+		Fn:     scenario1,
 	}
 
-	task2 := &boomer.Task{
-		Name:   "setCurrency",
-		Weight: 5,
-		Fn:     setCurrency,
-	}
-
-	task3 := &boomer.Task{
-		Name:   "browseProducts",
-		Weight: 10,
-		Fn:     browseProduct,
-	}
-	task4 := &boomer.Task{
-		Name:   "checkout",
-		Weight: 10,
-		Fn:     checkout,
-	}
-
-	numClients := 100
-	spawnRate := float64(200)
+	numClients := 1
+	spawnRate := float64(0.5)
 	globalBoomer = boomer.NewStandaloneBoomer(numClients, spawnRate)
-	//globalBoomer.AddOutput(boomer.NewConsoleOutput())
 
-	globalBoomer.Run(task1, task2, task3, task4)
+	globalBoomer.Run(task1)
 
 }
